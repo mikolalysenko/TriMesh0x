@@ -3,6 +3,9 @@
 
 #include <cstdlib>
 #include <stdint.h>
+#include <unordered_map>
+
+#include <Eigen/Core>
 
 #define FP_TOLERANCE 	1e-6
 
@@ -59,8 +62,20 @@ namespace impl {
 			
 		size_t operator()(const Coord& coord) const {
 			return (size_t)(expand(coord[0]) | (expand(coord[1]) << 1) | (expand(coord[2]) << 2));
-		} 
+		}
 	};
+	
+	//Type alias for a spatial grid
+	template<typename ValueType> 
+	struct SpatialGrid {
+		typedef std::unordered_map<
+			Eigen::Vector3i,
+			ValueType,
+			ZOrderHash<Eigen::Vector3i>,
+			std::equal_to<Eigen::Vector3i>,
+			Eigen::aligned_allocator< std::pair<const Eigen::Vector3i, ValueType> > > type;
+	};
+	
 }; };
 
 #endif

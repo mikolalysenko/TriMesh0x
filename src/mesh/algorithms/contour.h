@@ -40,10 +40,10 @@ void isocontour(
 	Eigen::Vector3i res) {
 	
 	//Edge intersections
-	std::unordered_map< Eigen::Vector3i, Eigen::Vector4f, ZOrderHash<Eigen::Vector3i> > edges[3];
+	typename impl::SpatialGrid<Eigen::Vector4f>::type edges[3];
 	
 	//Mesh vertices
-	std::unordered_map< Eigen::Vector3i, int, ZOrderHash<Eigen::Vector3i> > vertices;	
+	typename impl::SpatialGrid<int>::type vertices;	
 	
 	//Grid size
 	auto h = (hi - lo).array() / Vector(res[0], res[1], res[2]).array();
@@ -59,7 +59,7 @@ void isocontour(
 	
 		float* above = new float[sz];
 		float* below = new float[sz];
-		ScopedArray<float> aguard(above), bguard(below);
+		impl::ScopedArray<float> aguard(above), bguard(below);
 		
 		int idx = 0;
 		for(int x=0; x<=res[0]; ++x)

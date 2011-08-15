@@ -402,7 +402,7 @@ protected:
 };
 
 ///Type default for trimesh, use a triangle with no additional user data
-template<typename VertexData_t, typename TriangleData_t=EmptyStruct> class TriMesh;
+template<typename VertexData_t, typename TriangleData_t=Mesh::impl::EmptyStruct> class TriMesh;
 
 };
 

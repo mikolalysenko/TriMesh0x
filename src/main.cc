@@ -30,7 +30,6 @@ void init() {
     glNewList(scene_display_list, GL_COMPILE);
   
     
-
 	TriMesh<TerrainVertex> base_mesh;
 	TerrainGenerator terrain_func;
 	TerrainAttribute terrain_attr(terrain_func);
@@ -43,8 +42,8 @@ void init() {
 		Vector3f( 256, 128, 256),
 		Vector3i(256, 128, 256) );
 	
-	TerrainVertex *vbuffer;
-	int *ibuffer;
+	const TerrainVertex *vbuffer;
+	const int *ibuffer;
 	int vcount, icount;
 
 	base_mesh.get_buffers(

@@ -118,9 +118,9 @@ private:
 /**
  * Specialization:  When no additional data is required, we avoid storing the additional user data struct
  */
-template<> struct Triangle<Mesh::EmptyStruct> {
+template<> struct Triangle<Mesh::impl::EmptyStruct> {
 
-	typedef EmptyStruct UserData;
+	typedef Mesh::impl::EmptyStruct UserData;
 
 	/// The vertex indices for the triangle
 	int v[3];
@@ -145,17 +145,17 @@ template<> struct Triangle<Mesh::EmptyStruct> {
 	}
 
 	//User level constructors
-	Triangle(int v0, int v1, int v2, EmptyStruct const& d) {
+	Triangle(int v0, int v1, int v2, UserData const& d) {
 		v[0] = v0;
 		v[1] = v1;
 		v[2] = v2;
 	}
-	Triangle(const int* ptr, EmptyStruct const& d) {
+	Triangle(const int* ptr, UserData const& d) {
 		v[0] = ptr[0];
 		v[1] = ptr[1];
 		v[2] = ptr[2];
 	}
-	Triangle(std::vector<int> const& vec, EmptyStruct const& d) {
+	Triangle(std::vector<int> const& vec, UserData const& d) {
 		v[0] = vec[0];
 		v[1] = vec[1];
 		v[2] = vec[2];
@@ -192,17 +192,17 @@ template<> struct Triangle<Mesh::EmptyStruct> {
 	}
 	
 	//Data accessors
-	EmptyStruct const& data() const { 
-		static EmptyStruct garbage;	
+	UserData const& data() const { 
+		static UserData garbage;	
 		return garbage;
 	}
-	EmptyStruct data() {
-		static EmptyStruct garbage;
+	UserData data() {
+		static UserData garbage;
 		return garbage;
 	}
 };
 
-template<typename UserData=EmptyStruct> class Triangle;
+template<typename UserData=Mesh::impl::EmptyStruct> class Triangle;
 
 };
 

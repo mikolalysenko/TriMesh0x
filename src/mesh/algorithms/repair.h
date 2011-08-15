@@ -20,7 +20,7 @@ void repair_mesh_vertices(
 	float tolerance = FP_TOLERANCE) {
 
 	PositionAttribute< typename Mesh_t::VertexData > pos_attr;
-	std::unordered_map< Eigen::Vector3i, int, ZOrderHash<Eigen::Vector3i> > vertex_hash;
+	typename impl::SpatialGrid<int>::type vertex_hash;
 
 	//Perform an initial garbage collection
 	mesh.garbage_collect();

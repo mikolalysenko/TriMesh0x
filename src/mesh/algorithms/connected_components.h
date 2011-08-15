@@ -22,7 +22,7 @@ std::vector<Mesh_t> connected_components(Mesh_t const& mesh) {
 	int nt = mesh.triangles().size();
 	int* visited_v = (int*)malloc(nv * sizeof(int));
 	int* visited_t = (int*)malloc(nt * sizeof(int));
-	ScopedFree tguard(visited_v), vguard(visited_t);
+	impl::ScopedFree tguard(visited_v), vguard(visited_t);
 	memset(visited_v, -1, nv*sizeof(int));
 	memset(visited_t, -1, nt*sizeof(int));
 

@@ -1,6 +1,8 @@
 #ifndef MESH_H
 #define MESH_H
 
+//Implementation stuff
+#include "mesh/implementation/util.h"
 
 //Core data structures
 #include "mesh/core/attributes.h"
