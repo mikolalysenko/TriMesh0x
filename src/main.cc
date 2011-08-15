@@ -34,6 +34,8 @@ void init() {
 	TerrainGenerator terrain_func;
 	TerrainAttribute terrain_attr(terrain_func);
 	
+	printf("Contouring...\n");
+	
 	Mesh::isocontour(
 		base_mesh,
 		terrain_func,
@@ -41,6 +43,8 @@ void init() {
 		Vector3f(0, 0, 0),
 		Vector3f( 256, 128, 256),
 		Vector3i(256, 128, 256) );
+	
+	printf("Done!\n");
 	
 	const TerrainVertex *vbuffer;
 	const int *ibuffer;
