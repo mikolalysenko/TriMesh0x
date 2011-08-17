@@ -24,13 +24,8 @@ namespace Mesh {
  *		have a default constructor. Other properties may be required for 
  *		additional algorithms.
  *
- *	TriangleData_t : Extra user data for a triangle.  Stores additional user
- *		user level data
- *
  *******************************************************************************/
-template<
-	typename VertexData_t, 
-	typename TriangleData_t>
+template<typename VertexData_t>
 struct TriMesh {
 	
 	///A list of vertex names
@@ -38,13 +33,7 @@ struct TriMesh {
 	
 	///Type alias for the vertex data structure.
 	typedef VertexData_t VertexData;
-	
-	///Type alias for triangle data
-	typedef TriangleData_t TriangleData;
 
-	///Type alias for triangle
-	typedef Triangle<TriangleData> Tri;
-	
 	//Constructors/assignment operator boilerplate
 	TriMesh() {}
 	TriMesh(const TriMesh& other) :
@@ -124,20 +113,12 @@ struct TriMesh {
 	 *
 	 *	t : The name of the triangle.
 	 */
-	const Tri&						triangle(int t) const	{ return tri_data[t]; }
-	
-	/**
-	 * Returns the data associated to a given triangle.
-	 *
-	 * t : The name of the triangle.
-	 */
-	const TriangleData&				triangle_data(int t) const	{ return tri_data[t].data(); }	
-	TriangleData&					triangle_data(int t)		{ return tri_data[t].data(); }
+	const Triangle&				triangle(int t) const	{ return tri_data[t]; }
 	
 	/**
 	 * Returns a readable list of all triangles
 	 */
-	const std::vector<Tri>& 		triangles()  const		{ return tri_data; }
+	const std::vector<Triangle>& triangles()  const		{ return tri_data; }
 
 	/**
 	 * Returns the vertex with the given name.
@@ -146,8 +127,8 @@ struct TriMesh {
 	 *
 	 *	v : The name of the vertex.
 	 */
-	const VertexData&				vertex(int v) const	{ return vert_data[v]; }
-	VertexData&						vertex(int v)		{ return vert_data[v]; }
+	const VertexData&			vertex(int v) const	{ return vert_data[v]; }
+	VertexData&					vertex(int v)		{ return vert_data[v]; }
 	
 	/**
 	 * Returns a readable list of all vertices
@@ -192,7 +173,7 @@ struct TriMesh {
 	 *
 	 *	Returns : The name of a triangle.
 	 */
-	int add_triangle(const Tri& tri) {
+	int add_triangle(const Triangle& tri) {
 		int n;
 		if(dead_tris.size() > 0) {
 			n = dead_tris.back();
@@ -216,16 +197,8 @@ struct TriMesh {
 	 *
 	 * Returns the name of the triangle
 	 */
-	int add_triangle(int v0, int v1, int v2, TriangleData const& data) {
-		return add_triangle(Tri(v0, v1, v2, data));
-	}
-
-	int add_triangle(int v0, int v1, int v2, TriangleData&& data) {
-		return add_triangle(Tri(v0, v1, v2, data));
-	}
-	
 	int add_triangle(int v0, int v1, int v2) {
-		return add_triangle(Tri(v0, v1, v2));
+		return add_triangle(Triangle(v0, v1, v2));
 	}
 
 
@@ -394,15 +367,12 @@ struct TriMesh {
 	
 protected:
 	std::vector<int>			dead_tris;
-	std::vector<Tri>			tri_data;
+	std::vector<Triangle>		tri_data;
 	
 	std::vector<int>			dead_verts;
 	std::vector<VertexData>		vert_data;
 	std::vector<IncidenceList>	incidence;
 };
-
-///Type default for trimesh, use a triangle with no additional user data
-template<typename VertexData_t, typename TriangleData_t=Mesh::impl::EmptyStruct> class TriMesh;
 
 };
 

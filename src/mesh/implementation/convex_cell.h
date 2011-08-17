@@ -1,3 +1,5 @@
+#ifndef CONVEX_CELL_H
+#define CONVEX_CELL_H
 
 #include <vector>
 #include <list>
@@ -16,15 +18,16 @@ namespace impl {
 struct ConvexCell2D {
 
 	typedef Eigen::Hyperlane<float, 2>		halfspace;
+	typedef std::vector<halfspace, Eigen::aligned_allocator<halfspace> > halfspace_seq;
 	typedef typename halfspace::VectorType	vertex;
 	typedef std::vector<vertex, Eigen::aligned_allocator<vertex> > vertex_seq;
-	typedef std::list<int>					halfspace_seq;
+	typedef std::list<int>					cycle;
+	typedef std::vector<cycle>				cycle_stack;
 
-	std::vector<halfspace, Eigen::aligned_allocator<halfspace> >			halfspaces;
-	std::vector<halfspace_seq>		coincident_halfspaces;
-	std::vector<halfspace_seq>		contained_halfspaces;
-	halfspace_seq					active;
-	
+	halfspace_seq	halfspaces;
+	cycle_stack		coincident_halfspaces;
+	cycle_stack		contained_halfspaces;
+	cycle			active;
 	
 	enum PMC_VAL {
 		PMC_IN			= 1,
@@ -39,6 +42,51 @@ struct ConvexCell2D {
 		PLANE_EXTERIOR_COPLANAR	= 2,
 		PLANE_COINCIDENT		= 3
 	}
+	
+	ConvexCell2D() : halfspaces({
+		halfspace( 1, 0, 1000),
+		halfspace( 0, 1, 1000),
+		halfspace(-1, 0, 1000),
+		halfspace( 0,-1, 1000)}) {
+		for(int i=0; i<halfspaces.size(); ++i) {
+			active.push_back(i);
+		}
+	}
+	ConvexCell2D(const halfspace_seq& p) : halfspaces(p) {
+		for(int i=0; i<halfspaces.size(); ++i) {
+			active.push_back(i);
+		}
+	}
+	ConvexCell2D(halfspace_seq&& p) : halfspaces(p) {
+		for(int i=0; i<halfspaces.size(); ++i) {
+			active.push_back(i);
+		}
+	}
+	ConvexCell2D(const ConvexCell2D& c) :
+		halfspaces(c.halfspaces),
+		coincident_halfpsaces(c.coincident_halfspaces),
+		contained_halfspaces(c.contained_halfspaces),
+		active(c.active) {}
+	ConvexCell2D(ConvexCell&& c) :
+		halfspaces(c.halfspaces),
+		coincident_halfspaces(c.coincident_halfspaces),
+		contained_halfspaces(c.contained_halfspaces),
+		active(c.active) {}
+	ConvexCell2D& operator=(const ConvexCell2D& c) {
+		halfspaces = c.halfspaces;
+		coincident_halfspaces = c.coincident_halfspaces;
+		contained_halfspaces = c.contained_halfspaces;
+		active = c.active;
+		return *this;
+	}
+	ConvexCell2D& operator=(ConvexCell2D&& c) {
+		halfspaces = c.halfspaces;
+		coincident_halfspaces = c.coincident_halfspaces;
+		contained_halfspaces = c.contained_halfspaces;
+		active = c.active;
+		return *this;
+	}
+	
 	
 	//Classify a point
 	PMC_VAL classify_point(int i, int j, int k) const {
@@ -123,53 +171,9 @@ struct ConvexCell2D {
 	void push_halfspace(halfspace const& h) {
 		auto idx = halfspaces.size();
 		halfspaces.push_back(idx);
-				
-		//Special case: No planes to clip
+		
+		//Get size		
 		int N = active.size();
-		
-		if(N == 0) {
-			active.push_back(idx);
-			contained_halfspaces.push_back(active);
-			halfspace_seq tmp;
-			coincident_halfspaces.push_back(tmp);
-			return;
-		}
-		
-		//Special case:  Exactly one plane
-		if(codes.size() == 1) {
-
-			halfspace_seq tmp;
-			coincident_halfspaces.push_back(tmp);
-
-			//TODO: Check for coplanarity/coincidence and other degeneracies
-			switch(classify_plane(idx, active.front())) {
-				case PLANE_GENERAL: {
-					active.push_back(idx);
-					contained_halfspaces.push_back(active);
-				}
-				break;
-			
-				case PLANE_INTERIOR_COPLANAR: {
-					contained_halfspaces.push_back(active);
-					contained_halfspaces.back().push_back(idx);
-					active.front() = idx;
-				}
-				break;
-				
-				case PLANE_EXTERIOR_COPLANAR: {
-				}
-				break;
-				
-				case PLANE_COINCIDENT: {
-					contained_halfspaces.push_back(active);
-				}
-				break;
-				
-			}
-			return;
-		}
-
-		//Generic case:  Need to split active set
 		
 		//Classify all vertices		
 		std::vector<PMC_VAL> codes(N);
@@ -182,7 +186,7 @@ struct ConvexCell2D {
 			all_on &= (codes[i] == PMC_ON);
 		}
 		
-		//Compute predecessor and successor codes by DP
+		//Compute predecessor and successor codes by dynamic programming
 		std::vector<PMC_VAL> 
 			pred_codes(codes.begin()+1, codes.end()), 
 			succ_codes(codes.begin(), codes.end());
@@ -214,7 +218,7 @@ struct ConvexCell2D {
 			}
 		}
 		
-		//Next, we need to partition the edge set into interior and exterior components
+		//Partition the edge set into interior and exterior by h
 		halfspace_seq interior;
 		contained_halfspaces.push_back(interior);
 		coincident_halfspaces.push_back(interior);
@@ -273,3 +277,6 @@ struct ConvexCell2D {
 };
 
 }}
+
+#endif
+
