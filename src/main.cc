@@ -90,7 +90,7 @@ void input() {
         running = false;
     }
     
-    static bool pressed_a = false, pressed_s = false;
+    static bool pressed_a = false, pressed_s = false, pressed_d = false;
     if( glfwGetKey('A') == GLFW_PRESS) {
     	if(!pressed_a) {
 	    	test_cell.push_back(halfspace(normal(drand48()-0.5, drand48()-0.5).normalized(), 50*(drand48()-0.5)));
@@ -109,6 +109,17 @@ void input() {
 	}
 	else {
 		pressed_s = false;
+	}
+
+
+    if( glfwGetKey('D') == GLFW_PRESS) {
+    	if(!pressed_d) {
+	    	test_cell.pop_back();
+    		pressed_d = true;
+    	}
+	}
+	else {
+		pressed_d = false;
 	}
 
 	

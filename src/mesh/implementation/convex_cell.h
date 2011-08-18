@@ -106,8 +106,7 @@ struct ConvexCell2D {
 	}
 
 	void pop_back() {
-	/*
-		halfspace_seq& contained = contained_halfspaces.back();
+		cycle& contained = contained_halfspaces.back();
 		halfspaces.pop_back();
 		
 		if(active.empty()) {
@@ -115,55 +114,45 @@ struct ConvexCell2D {
 		} else if(!contained.empty()) {
 			auto idx = halfspaces.size();
 			
-			//Rotate index to front in each list
-			auto iter = active.find(idx);
-			active.splice(active.begin(), active, iter, active.end());
-			active.pop_front();
 			
-			iter = contained.find(idx);
-			contained.splice(contained.begin(), contained, iter, contained.end());
-			contained.pop_front();
+			std::cout << "Removing plane: " << idx << std::endl;
+			std::cout << "Active = ";
+			for(int i=0; i<active.size(); ++i)
+				std::cout << active[i] << ',';
+			std::cout << std::endl << "Contained = ";
+			for(int i=0; i<contained.size(); ++i)
+				std::cout << contained[i] << ',';
+			std::cout << std::endl;
 			
-			auto cbegin = contained.begin();
-			auto ptr = active.begin();
-			while(true) {
-				if(*cbegin == *ptr) {
-					++cbegin;
-				}
-				else {
-					++ptr;
-					if(*cbegin == *ptr) {
-						++cbegin;
-					}
-					else {
-						break;
-					}
-				}
+			//Vector version
+			int pend = active.size();
+			active.resize(contained.size() + active.size() - 4);
+			auto a_iter = std::find(active.begin(), active.end(), idx);
+			auto a_end = active.begin() + pend;
+			auto b_start = contained.begin();
+			auto b_iter = std::find(contained.begin(), contained.end(), idx);
+			
+			assert(a_iter != active.end() && b_iter != contained.end());
+			
+			if(a_iter+1 != active.end()) {
+				std::copy_backward(a_iter+2, a_end, active.end());
 			}
-			
-			auto cend = contained.end();
-			ptr = active.end();
-			while(true) {
-				if(*cend == *ptr) {
-					--cend;
-				}
-				else {
-					--ptr;
-					if(*cend == *ptr) {
-						--cend;
-					}
-					else {
-						break;
-					}
-				}
+			if(b_iter+1 != contained.end()) {
+				a_iter = std::copy(b_iter+2, contained.end(), a_iter);
 			}
-			
-			//Merge the lists back together
-			active.splice(active.begin(), contained, cbegin, cend);
+			else {
+				++b_start;
+			}
+			std::copy(b_start, b_iter, a_iter);
 		}
 		
+		std::cout << "Resulting Active Cycle = ";
+		for(int i=0; i<active.size(); ++i)
+			std::cout << active[i] << ',';
+		std::cout << std::endl;
+
+		
 		contained_halfspaces.pop_back();
-	*/
 	}
 
 	//Pushes a halfspace onto the plane stack; partition the current active cell
@@ -184,12 +173,12 @@ struct ConvexCell2D {
 		
 		//Classify all vertices		
 		std::vector<PMC_VAL> codes(N);
-		auto iter = active.rbegin();
-		for(int i=0; iter!=active.rend(); ++iter, ++i) {
+		auto iter = active.begin();
+		for(int i=0; iter!=active.end(); ++iter, ++i) {
 			auto next = iter;
 			++next;
-			if(next == active.rend()) {
-				next = active.rbegin();
+			if(next == active.end()) {
+				next = active.begin();
 			}
 			std::cout << "Classifying point " << i << std::endl;
 			codes[i] = classify_point(idx, *iter, *next);
@@ -233,8 +222,10 @@ struct ConvexCell2D {
 		cycle interior;
 		contained_halfspaces.push_back(interior);
 		cycle& exterior = contained_halfspaces.back();
-		
-		auto cur = active.rbegin();		
+		interior.reserve(active.size()+1);
+		exterior.reserve(active.size()+1);
+
+		auto cur = active.begin();		
 		for(int i=0, p=codes.back(); i<codes.size(); ++i, ++cur) {
 		
 			int a = pred_codes[i],
@@ -244,16 +235,16 @@ struct ConvexCell2D {
 			//Printing stuff
 			halfspace tmp = halfspaces[*cur];
 			halfspace nh, ph;
-			if(cur == active.rend()) {
-				nh = halfspaces[active.back()];
+			if(cur == active.end()-1) {
+				nh = halfspaces[active.front()];
 			}
 			else {
 				auto t2 = cur;
 				++t2;
 				nh = halfspaces[*t2];
 			}
-			if(cur == active.rbegin()) {
-				ph = halfspaces[active.front()];
+			if(cur == active.begin()) {
+				ph = halfspaces[active.back()];
 			}
 			else {
 				auto t2 = cur;
@@ -269,11 +260,9 @@ struct ConvexCell2D {
 			if(a == PMC_IN) {
 				std::cout << "+interior" << std::endl;
 				interior.push_back(*cur);
-				if(b == PMC_OUT) {
-					if(n != PMC_ON) {
-						std::cout << "+h-exterior" << std::endl;
-						exterior.push_back(idx);
-					}
+				if(n == PMC_OUT) {
+					std::cout << "+h-exterior" << std::endl;
+					exterior.push_back(idx);
 					std::cout << "+exterior" << std::endl;
 					exterior.push_back(*cur);
 				}
@@ -281,11 +270,9 @@ struct ConvexCell2D {
 			else if(a == PMC_OUT) {
 				std::cout << "+exterior" << std::endl;
 				exterior.push_back(*cur);
-				if(b == PMC_IN) {
-					if(n != PMC_ON) {
-						std::cout << "+h-interior" << std::endl;
-						interior.push_back(idx);
-					}
+				if(n == PMC_IN) {
+					std::cout << "+h-interior" << std::endl;
+					interior.push_back(idx);
 					std::cout << "+interior" << std::endl;
 					interior.push_back(*cur);
 				}
@@ -307,9 +294,7 @@ struct ConvexCell2D {
 			}
 		}
 
-		
 		active.swap(interior);
-		
 	}
 	
 	bool empty() const { return active.empty(); }
