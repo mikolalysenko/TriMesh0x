@@ -8,6 +8,8 @@
 
 #include "mesh/mesh.h"
 
+#include "mesh/implementation/convex_cell.h"
+
 #include "terrain.h"
 
 using namespace std;
@@ -24,11 +26,16 @@ double tx = 0., ty=0., tz=100.;
 double fov=45., znear=1., zfar=1000.;
 int mx = 0, my = 0, mz = 0;
 
+Mesh::impl::ConvexCell2D test_cell;
+
+typedef Mesh::impl::ConvexCell2D::halfspace halfspace;
+typedef Mesh::impl::ConvexCell2D::normal	normal;
+
 void init() {
 
+	/*
     scene_display_list = glGenLists(1);
     glNewList(scene_display_list, GL_COMPILE);
-  
     
 	TriMesh<TerrainVertex> base_mesh;
 	TerrainGenerator terrain_func;
@@ -68,6 +75,12 @@ void init() {
 	glEnd();
 	
     glEndList();
+    */
+    
+    
+
+    
+    
 }
 
 void input() {
@@ -76,6 +89,29 @@ void input() {
         !glfwGetWindowParam(GLFW_OPENED) ) {
         running = false;
     }
+    
+    static bool pressed_a = false, pressed_s = false;
+    if( glfwGetKey('A') == GLFW_PRESS) {
+    	if(!pressed_a) {
+	    	test_cell.push_back(halfspace(normal(drand48()-0.5, drand48()-0.5).normalized(), 50*(drand48()-0.5)));
+    		pressed_a = true;
+    	}
+	}
+	else {
+		pressed_a = false;
+	}
+	
+    if( glfwGetKey('S') == GLFW_PRESS) {
+    	if(!pressed_s) {
+	    	test_cell.flip_back();
+    		pressed_s = true;
+    	}
+	}
+	else {
+		pressed_s = false;
+	}
+
+	
     
     int w, h;
     glfwGetWindowSize(&w, &h);
@@ -117,6 +153,8 @@ void input() {
 
 void draw() {
 
+	srand(time(NULL));
+
     int w, h;
     glfwGetWindowSize(&w, &h);
     glViewport(0, 0, w, h);
@@ -143,7 +181,15 @@ void draw() {
         }
     }
     
-    glCallList(scene_display_list);
+    //glCallList(scene_display_list);
+    auto vertices = test_cell.vertices();
+    
+    glColor3f(1,1,1);
+    glBegin(GL_LINE_LOOP);
+    for(int i=0; i<vertices.size(); ++i) {
+    	glVertex2f(vertices[i][0], vertices[i][1]);
+    }
+    glEnd();
 }
 
 };
